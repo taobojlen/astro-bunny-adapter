@@ -1,0 +1,36 @@
+{
+  "name": "astro-bunny-adapter",
+  "version": "0.1.0",
+  "description": "Astro adapter for bunny.net Edge Scripting",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./entrypoints/server.js": "./dist/entrypoints/server.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "vite build && tsc",
+    "dev": "vite build --watch",
+    "prepublishOnly": "vite build && tsc"
+  },
+  "dependencies": {
+    "@bunny.net/edgescript-sdk": "^0.12.1",
+    "esbuild": "^0.25.0",
+    "esbuild-plugin-node-protocol-imports": "^0.0.1"
+  },
+  "peerDependencies": {
+    "astro": "^6.0.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.1",
+    "@types/node": "^22.12.0",
+    "astro": "^6.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}
