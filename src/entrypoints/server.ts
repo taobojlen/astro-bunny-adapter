@@ -1,7 +1,6 @@
 import type { SSRManifest } from "astro";
 import { App } from "astro/app";
-// @ts-expect-error — resolved at runtime in the bunny edge environment
-import { net } from "@bunny.net/edgescript-sdk/esm-bunny/lib.mjs";
+import { net } from "@bunny.net/edgescript-sdk";
 
 let app: App;
 
