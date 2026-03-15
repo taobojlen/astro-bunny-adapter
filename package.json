@@ -1,6 +1,6 @@
 {
   "name": "astro-bunny-adapter",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Astro adapter for bunny.net Edge Scripting",
   "license": "MIT",
   "repository": {
