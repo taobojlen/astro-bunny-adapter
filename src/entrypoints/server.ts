@@ -1,22 +1,18 @@
-import type { SSRManifest } from "astro";
 import { App } from "astro/app";
+// @ts-ignore - virtual module provided by Astro at build time
+import { manifest } from "virtual:astro:manifest";
 import { net } from "@bunny.net/edgescript-sdk";
 
-let app: App;
+const app = new App(manifest);
 
-export function createExports(manifest: SSRManifest) {
-  app = new App(manifest);
-  return { handler };
-}
-
-async function handler(
-  ctx: { request: Request; response: Response },
-): Promise<Response> {
+export async function handler(
+  ctx: { request: Request },
+): Promise<Request | Response> {
   const request = ctx.request;
 
   const routeData = app.match(request);
   if (!routeData) {
-    return ctx.response;
+    return request;
   }
 
   const response = await app.render(request, { routeData });
@@ -38,12 +34,6 @@ async function handler(
   return response;
 }
 
-export function start(manifest: SSRManifest) {
-  const exports = createExports(manifest);
-
-  net.http
-    .servePullZone()
-    .onOriginResponse(async (ctx: { request: Request; response: Response }) => {
-      return exports.handler(ctx);
-    });
-}
+net.http
+  .servePullZone()
+  .onOriginRequest((ctx) => handler(ctx) as Promise<Request> | Promise<Response>);

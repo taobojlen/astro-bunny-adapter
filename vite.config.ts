@@ -19,6 +19,7 @@ export default defineConfig({
         "astro",
         "astro/app",
         /^node:/,
+        /^virtual:astro:/,
         "esbuild",
         "esbuild-plugin-node-protocol-imports",
         /@bunny\.net\//,

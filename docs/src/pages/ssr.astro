@@ -1,0 +1,13 @@
+---
+const url = new URL(Astro.request.url);
+---
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SSR Test</title>
+</head>
+<body>
+  <h1>SSR Works</h1>
+  <p>Path: {url.pathname}</p>
+</body>
+</html>
