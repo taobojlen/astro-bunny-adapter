@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Astro adapter for bunny.net Edge Scripting",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taobojlen/astro-bunny-adapter.git"
+  },
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
