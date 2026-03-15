@@ -88,21 +88,8 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
         await build(finalOptions);
 
         // Clean up intermediate build artifacts — keep only the bundled output
-        const { readdir, unlink, rename } = await import("node:fs/promises");
-        const { join } = await import("node:path");
-
-        const serverFiles = await readdir(serverDir);
-        for (const file of serverFiles) {
-          if (file !== "entry.bundled.mjs") {
-            await unlink(join(serverDir, file));
-          }
-        }
-
-        // Rename the bundled file to the expected entry name
-        await rename(
-          join(serverDir, "entry.bundled.mjs"),
-          join(serverDir, "entry.mjs"),
-        );
+        const { cleanupServerDir } = await import("./cleanup.js");
+        await cleanupServerDir(serverDir);
       },
     },
   };
