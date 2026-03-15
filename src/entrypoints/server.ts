@@ -3,6 +3,15 @@ import { App } from "astro/app";
 import { manifest } from "virtual:astro:manifest";
 import { net } from "@bunny.net/edgescript-sdk";
 
+// Polyfill process.env from Deno's environment so that Astro's
+// import.meta.env works in the Bunny edge runtime (Deno-based).
+// @ts-ignore - Deno runtime
+const denoEnv = globalThis.Deno?.env?.toObject?.() ?? {};
+// @ts-ignore
+globalThis.process = globalThis.process ?? {};
+// @ts-ignore
+globalThis.process.env = { ...denoEnv, ...globalThis.process.env };
+
 const app = new App(manifest);
 
 export async function handler(
