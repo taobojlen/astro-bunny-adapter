@@ -1,0 +1,34 @@
+name: Deploy docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build adapter
+        run: pnpm build
+
+      - name: Build docs
+        run: pnpm --filter astro-bunny-adapter-docs build
+
+      - name: Deploy to Bunny Edge Scripting
+        uses: BunnyWay/actions/deploy-script@main
+        with:
+          script_id: ${{ secrets.BUNNY_SCRIPT_ID }}
+          deploy_key: ${{ secrets.BUNNY_DEPLOY_KEY }}
+          file: docs/dist/server/entry.mjs
