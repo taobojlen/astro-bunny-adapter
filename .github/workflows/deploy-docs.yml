@@ -26,6 +26,24 @@ jobs:
       - name: Build docs
         run: pnpm --filter astro-bunny-adapter-docs build
 
+      - name: Upload static assets to Bunny Storage
+        env:
+          BUNNY_STORAGE_PASSWORD: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+          BUNNY_STORAGE_ZONE: ${{ secrets.BUNNY_STORAGE_ZONE }}
+          BUNNY_STORAGE_HOSTNAME: ${{ vars.BUNNY_STORAGE_HOSTNAME || 'storage.bunnycdn.com' }}
+        run: |
+          cd docs/dist/client
+          find . -type f | while read -r file; do
+            path="${file#./}"
+            echo "Uploading $path"
+            curl -s -X PUT \
+              -H "AccessKey: $BUNNY_STORAGE_PASSWORD" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file" \
+              "https://$BUNNY_STORAGE_HOSTNAME/$BUNNY_STORAGE_ZONE/$path" \
+              --fail
+          done
+
       - name: Deploy to Bunny Edge Scripting
         uses: BunnyWay/actions/deploy-script@main
         with:
