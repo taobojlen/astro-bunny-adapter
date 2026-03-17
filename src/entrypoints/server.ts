@@ -12,35 +12,47 @@ globalThis.process = globalThis.process ?? {};
 // @ts-ignore
 globalThis.process.env = { ...denoEnv, ...globalThis.process.env };
 
-const app = new App(manifest);
+let app: App;
+try {
+  app = new App(manifest);
+} catch (e) {
+  console.error("Failed to initialize Astro App:", e);
+  throw e;
+}
 
 export async function handler(
   ctx: { request: Request },
 ): Promise<Request | Response> {
   const request = ctx.request;
 
-  const routeData = app.match(request);
-  if (!routeData) {
-    return request;
-  }
-
-  const response = await app.render(request, { routeData });
-
-  // Apply Set-Cookie headers from Astro's cookie API
-  const setCookieHeaders = Array.from(app.setCookieHeaders(response));
-  if (setCookieHeaders.length > 0) {
-    const headers = new Headers(response.headers);
-    for (const cookie of setCookieHeaders) {
-      headers.append("Set-Cookie", cookie);
+  try {
+    const routeData = app.match(request);
+    if (!routeData) {
+      return request;
     }
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
-  }
 
-  return response;
+    const response = await app.render(request, { routeData });
+
+    // Apply Set-Cookie headers from Astro's cookie API
+    const setCookieHeaders = Array.from(app.setCookieHeaders(response));
+    if (setCookieHeaders.length > 0) {
+      const headers = new Headers(response.headers);
+      for (const cookie of setCookieHeaders) {
+        headers.append("Set-Cookie", cookie);
+      }
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    }
+
+    return response;
+  } catch (e) {
+    const message = e instanceof Error ? e.stack || e.message : String(e);
+    console.error(`Render error: ${request.method} ${request.url}\n${message}`);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
 
 net.http
