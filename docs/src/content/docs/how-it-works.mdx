@@ -1,0 +1,45 @@
+---
+title: How It Works
+description: Understand how astro-bunny-adapter builds and serves your Astro site.
+---
+
+## Build pipeline
+
+When you run `astro build`, the adapter hooks into Astro's build process:
+
+1. **Astro builds your app** as usual in server mode, producing a `client/`
+   directory (static assets) and a `server/` directory (server code).
+
+2. **The adapter re-bundles the server output** with
+   [esbuild](https://esbuild.github.io/), targeting `platform: "browser"` so
+   the code runs in bunny.net's Deno-based edge runtime. All dependencies are
+   inlined into a single file, except for `node:*` built-ins and the
+   `@bunny.net/edgescript-sdk`.
+
+3. **Intermediate build artifacts are cleaned up**, leaving only the final
+   `entry.mjs` in `dist/server/`.
+
+## Request handling
+
+At runtime, the edge script uses
+[`servePullZone().onOriginRequest()`](https://docs.bunny.net/scripting/middleware/overview)
+from the `@bunny.net/edgescript-sdk` to intercept incoming requests.
+
+For each request:
+
+1. The handler checks if the request matches an Astro route.
+2. **If it matches** — Astro renders the page or API endpoint server-side and
+   returns the response.
+3. **If it doesn't match** — The request is passed through to the pull zone
+   origin unchanged, which serves static assets from your storage zone.
+
+This means your static assets (CSS, JS, images, prerendered pages) are served
+directly from bunny.net's CDN, while dynamic pages and API routes are rendered
+at the edge.
+
+## Environment variables
+
+bunny.net Edge Scripting runs on [Deno](https://deno.com/), which exposes
+environment variables through `Deno.env` rather than `process.env`. The adapter
+automatically polyfills `process.env` from `Deno.env` so that Astro and your
+application code can access environment variables as expected.

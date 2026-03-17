@@ -8,7 +8,9 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@astrojs/starlight": "^0.38.1",
     "astro": "^6.0.0",
-    "astro-bunny-adapter": "workspace:*"
+    "astro-bunny-adapter": "workspace:*",
+    "starlight-theme-flexoki": "^0.2.2"
   }
 }

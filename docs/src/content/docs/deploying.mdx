@@ -1,0 +1,98 @@
+---
+title: Deploying
+description: Deploy your Astro site to bunny.net Edge Scripting.
+---
+
+After running `astro build`, you need to deploy two things:
+
+1. **Static assets** (`dist/client/`) to a Bunny Storage Zone
+2. **Server script** (`dist/server/entry.mjs`) to an Edge Script
+
+## bunny.net setup
+
+Before deploying, set up the following in your
+[bunny.net dashboard](https://dash.bunny.net):
+
+1. **Storage Zone** — Create a storage zone to host your static assets
+   (CSS, JS, images, prerendered pages).
+2. **Pull Zone** — Create a pull zone linked to your storage zone. This serves
+   your static assets over bunny.net's CDN.
+3. **Middleware Edge Script** — Create a middleware edge script connected to
+   the pull zone. The middleware intercepts requests and renders dynamic pages
+   through Astro's SSR pipeline. Requests that don't match an Astro route are
+   passed through to the pull zone origin (your static assets).
+
+## Manual deployment
+
+### Upload static assets
+
+Upload the contents of `dist/client/` to your storage zone. You can use the
+[bunny.net dashboard](https://dash.bunny.net), the
+[Storage API](https://docs.bunny.net/reference/storage-api-overview), or any
+tool that supports the Bunny Storage API.
+
+### Deploy the edge script
+
+Deploy `dist/server/entry.mjs` to your edge script using the
+[Edge Scripting API](https://docs.bunny.net/docs/edge-scripting-api) or the
+bunny.net dashboard.
+
+## GitHub Actions
+
+Here's a complete workflow that builds and deploys on every push to `main`:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload static assets
+        env:
+          BUNNY_STORAGE_PASSWORD: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+          BUNNY_STORAGE_ZONE: ${{ secrets.BUNNY_STORAGE_ZONE }}
+        run: |
+          cd dist/client
+          find . -type f | while read -r file; do
+            path="${file#./}"
+            curl -s -X PUT \
+              -H "AccessKey: $BUNNY_STORAGE_PASSWORD" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file" \
+              "https://storage.bunnycdn.com/$BUNNY_STORAGE_ZONE/$path" \
+              --fail
+          done
+
+      - name: Deploy edge script
+        uses: BunnyWay/actions/deploy-script@main
+        with:
+          script_id: ${{ secrets.BUNNY_SCRIPT_ID }}
+          deploy_key: ${{ secrets.BUNNY_DEPLOY_KEY }}
+          file: dist/server/entry.mjs
+```
+
+### Required secrets
+
+| Secret | Description |
+|---|---|
+| `BUNNY_STORAGE_PASSWORD` | Storage Zone AccessKey (found in Storage Zone settings → FTP & API Access) |
+| `BUNNY_STORAGE_ZONE` | Name of your storage zone |
+| `BUNNY_SCRIPT_ID` | Edge Script ID (found in Edge Script settings) |
+| `BUNNY_DEPLOY_KEY` | Edge Script deploy key |

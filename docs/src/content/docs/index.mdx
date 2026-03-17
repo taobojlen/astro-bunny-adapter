@@ -1,0 +1,35 @@
+---
+title: astro-bunny-adapter
+description: An Astro adapter for bunny.net Edge Scripting.
+hero:
+  tagline: Deploy your Astro site to bunny.net's edge network with full SSR support.
+  actions:
+    - text: Get Started
+      link: /getting-started
+      icon: rocket
+    - text: View on GitHub
+      link: https://github.com/taobojlen/astro-bunny-adapter
+      variant: minimal
+      icon: github
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid>
+  <Card title="Getting Started" icon="rocket">
+    Install the adapter and configure your Astro project.
+    [Read more →](/getting-started)
+  </Card>
+  <Card title="Configuration" icon="setting">
+    Customize esbuild options and image handling.
+    [Read more →](/configuration)
+  </Card>
+  <Card title="Deploying" icon="external">
+    Deploy static assets and your edge script to bunny.net.
+    [Read more →](/deploying)
+  </Card>
+  <Card title="How It Works" icon="open-book">
+    Understand the build pipeline and request handling.
+    [Read more →](/how-it-works)
+  </Card>
+</CardGrid>

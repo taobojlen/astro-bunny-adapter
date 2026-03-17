@@ -1,0 +1,83 @@
+---
+title: Configuration
+description: Configure the astro-bunny-adapter.
+---
+
+The adapter accepts an optional configuration object.
+
+## `esbuild`
+
+After Astro builds your app, the adapter re-bundles the server output with
+[esbuild](https://esbuild.github.io/) so it runs in bunny.net's Deno-based
+edge runtime. Use this option to customize the esbuild configuration.
+
+### Merging with defaults
+
+Pass an object to merge with the default esbuild options:
+
+```js
+import { defineConfig } from "astro/config";
+import bunny from "astro-bunny-adapter";
+
+export default defineConfig({
+  output: "server",
+  adapter: bunny({
+    esbuild: {
+      minify: true,
+    },
+  }),
+});
+```
+
+### Full control
+
+Pass a function to receive the default options and return your own:
+
+```js
+import { defineConfig } from "astro/config";
+import bunny from "astro-bunny-adapter";
+
+export default defineConfig({
+  output: "server",
+  adapter: bunny({
+    esbuild: (defaults) => ({
+      ...defaults,
+      minify: true,
+      // add custom plugins, change target, etc.
+    }),
+  }),
+});
+```
+
+### Default esbuild options
+
+For reference, the adapter uses these defaults:
+
+```js
+{
+  entryPoints: [entryFile],
+  outfile: outFile,
+  bundle: true,
+  format: "esm",
+  platform: "browser",
+  target: "es2024",
+  minify: false,
+  external: [
+    "node:*",
+    "@bunny.net/edgescript-sdk",
+    "@bunny.net/edgescript-sdk/*",
+  ],
+  logLevel: "info",
+}
+```
+
+## Image optimization
+
+Astro's default [Sharp](https://sharp.pixelplumbing.com/) image service is not
+available in bunny.net's edge runtime. The adapter automatically detects this
+and switches to a passthrough (no-op) image service, logging a warning during
+the build.
+
+If you need image optimization, consider using bunny.net's built-in
+[Bunny Optimizer](https://docs.bunny.net/docs/stream-image-processing) on your
+Pull Zone, or an external image CDN.

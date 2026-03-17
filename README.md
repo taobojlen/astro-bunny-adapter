@@ -59,7 +59,7 @@ bunny({
 
 - Astro 6
 - Node.js >= 22.12.0
-- A bunny.net account with Edge Scripting enabled
+- A bunny.net account
 
 ## License
 

@@ -1,0 +1,69 @@
+---
+title: Getting Started
+description: Install and configure astro-bunny-adapter to deploy your Astro site to bunny.net.
+---
+
+## Prerequisites
+
+- [Astro](https://astro.build) 6
+- Node.js 22.12.0 or later
+- A [bunny.net](https://bunny.net) account
+
+## Installation
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install astro-bunny-adapter
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```bash
+    pnpm add astro-bunny-adapter
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```bash
+    yarn add astro-bunny-adapter
+    ```
+  </TabItem>
+</Tabs>
+
+## Configuration
+
+Add the adapter to your `astro.config.mjs`:
+
+```js
+// astro.config.mjs
+import { defineConfig } from "astro/config";
+import bunny from "astro-bunny-adapter";
+
+export default defineConfig({
+  output: "server",
+  adapter: bunny(),
+});
+```
+
+:::caution
+`output: "server"` is required. Static output is not supported because
+bunny.net Edge Scripting is designed for on-demand server rendering.
+:::
+
+## Build output
+
+Running `astro build` produces two directories:
+
+```
+dist/
+├── client/   # Static assets (CSS, JS, images, prerendered pages)
+└── server/
+    └── entry.mjs   # Server entrypoint for Edge Scripting
+```
+
+- **`dist/client/`** — Upload these files to a [Bunny Storage Zone](https://docs.bunny.net/docs/storage-overview)
+  connected to your Pull Zone.
+- **`dist/server/entry.mjs`** — Deploy this file as your Edge Script.
+
+See [Deploying](/deploying) for step-by-step instructions.

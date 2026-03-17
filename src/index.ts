@@ -7,6 +7,27 @@ export type Options = {
     | ((defaults: BuildOptions) => BuildOptions | Promise<BuildOptions>);
 };
 
+/**
+ * Returns the default esbuild options used to bundle the server output.
+ * The `entryPoints`, `outfile`, and `plugins` fields are set at build time
+ * and not included here.
+ */
+export function getDefaultEsbuildOptions(): Omit<BuildOptions, "entryPoints" | "outfile" | "plugins"> {
+  return {
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: "es2024",
+    minify: false,
+    external: [
+      "node:*",
+      "@bunny.net/edgescript-sdk",
+      "@bunny.net/edgescript-sdk/*",
+    ],
+    logLevel: "info",
+  };
+}
+
 export default function bunnyAdapter(options: Options = {}): AstroIntegration {
   let astroConfig: AstroConfig;
 
@@ -85,20 +106,10 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
         );
 
         const defaults: BuildOptions = {
+          ...getDefaultEsbuildOptions(),
           entryPoints: [entryFile],
           outfile: outFile,
-          bundle: true,
-          format: "esm",
-          platform: "browser",
-          target: "es2024",
-          minify: false,
-          external: [
-            "node:*",
-            "@bunny.net/edgescript-sdk",
-            "@bunny.net/edgescript-sdk/*",
-          ],
           plugins: [nodeProtocolImports.default],
-          logLevel: "info",
         };
 
         const finalOptions =

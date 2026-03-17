@@ -1,0 +1,44 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+
+const serverTime = new Date().toISOString();
+---
+
+<StarlightPage
+  frontmatter={{ title: "SSR Demo", description: "Demonstrating server-side rendering with bunny.net Edge Scripting" }}
+>
+  <p>
+    This page demonstrates that server-side rendering works. It is rendered
+    on the server on each request and calls a server API endpoint from the
+    client.
+  </p>
+
+  <h2 id="server-rendered-timestamp">Server-Rendered Timestamp</h2>
+  <p>
+    This timestamp was generated on the server when the page was rendered.
+    Reload the page to see it change.
+  </p>
+  <pre><code id="server-time">{serverTime}</code></pre>
+
+  <h2 id="api-endpoint">API Endpoint</h2>
+  <p>
+    Click the button below to call the <code>/api/time</code> server endpoint
+    and display the result.
+  </p>
+  <button id="fetch-time">Fetch Server Time</button>
+  <pre><code id="api-result">Click the button above</code></pre>
+
+  <script>
+    document.getElementById("fetch-time")?.addEventListener("click", async () => {
+      const result = document.getElementById("api-result")!;
+      result.textContent = "Loading...";
+      try {
+        const res = await fetch("/api/time");
+        const data = await res.json();
+        result.textContent = data.time;
+      } catch (err) {
+        result.textContent = `Error: ${err}`;
+      }
+    });
+  </script>
+</StarlightPage>
