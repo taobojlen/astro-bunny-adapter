@@ -13,5 +13,5 @@ describe("astro build", () => {
       stdio: "pipe",
     });
     expect(result).toContain("build");
-  });
+  }, 120_000);
 });

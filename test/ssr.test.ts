@@ -14,24 +14,33 @@ describe("SSR rendering", () => {
     entry = await import(resolve(docsDir, "dist/server/entry.mjs"));
   }, 120_000);
 
-  it("renders the index page with a 200 status", async () => {
+  it("passes through prerendered pages to origin", async () => {
     const request = new Request("http://example.com/");
     const result = await entry.handler({ request });
 
-    expect(result).toBeInstanceOf(Response);
-    expect((result as Response).status).toBe(200);
-    const html = await (result as Response).text();
-    expect(html).toContain("astro-bunny-adapter");
+    // Prerendered pages are served as static files by the CDN,
+    // so the handler passes the request through to origin.
+    expect(result).toBeInstanceOf(Request);
   });
 
-  it("renders an SSR page that uses Astro.request", async () => {
-    const request = new Request("http://example.com/ssr");
+  it("renders the SSR demo page with a 200 status", async () => {
+    const request = new Request("http://example.com/ssr-demo");
     const result = await entry.handler({ request });
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).status).toBe(200);
     const html = await (result as Response).text();
-    expect(html).toContain("SSR Works");
+    expect(html).toContain("SSR Demo");
+  });
+
+  it("returns a JSON response from the API endpoint", async () => {
+    const request = new Request("http://example.com/api/time");
+    const result = await entry.handler({ request });
+
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(200);
+    const data = await (result as Response).json();
+    expect(data).toHaveProperty("time");
   });
 
   it("passes through requests that don't match any route", async () => {
