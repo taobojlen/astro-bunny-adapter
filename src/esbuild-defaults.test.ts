@@ -10,7 +10,7 @@ describe("getDefaultEsbuildOptions", () => {
       format: "esm",
       platform: "browser",
       target: "es2024",
-      minify: false,
+      minify: true,
       external: [
         "node:*",
         "@bunny.net/edgescript-sdk",

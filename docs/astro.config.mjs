@@ -5,7 +5,9 @@ import bunnyAdapter from "astro-bunny-adapter";
 
 export default defineConfig({
   output: "server",
-  adapter: bunnyAdapter(),
+  adapter: bunnyAdapter({
+    shiki: { bundledLangs: ["bash", "js", "yaml"] },
+  }),
   integrations: [
     starlight({
       title: "astro-bunny-adapter",
