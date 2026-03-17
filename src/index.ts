@@ -23,7 +23,7 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
         });
       },
 
-      "astro:config:done": ({ config, setAdapter, buildOutput }) => {
+      "astro:config:done": ({ config, setAdapter, buildOutput, logger }) => {
         astroConfig = config;
 
         if (buildOutput === "static") {
@@ -32,6 +32,19 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
               "This adapter requires on-demand server rendering. " +
               'Set `output: "server"` in your Astro config.',
           );
+        }
+
+        if (
+          config.image.service.entrypoint === "astro/assets/services/sharp"
+        ) {
+          logger.warn(
+            "sharp is not supported in Bunny.net's edge runtime. " +
+              "The image service has been automatically switched to passthrough.",
+          );
+          config.image.service = {
+            entrypoint: "astro/assets/services/noop",
+            config: {},
+          };
         }
 
         setAdapter({
@@ -44,6 +57,14 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
             sharpImageService: "unsupported",
           },
         });
+      },
+
+      "astro:build:setup": ({ vite, target }) => {
+        if (target === "server") {
+          vite.build ??= {};
+          vite.build.rollupOptions ??= {};
+          vite.build.rollupOptions.external = ["sharp"];
+        }
       },
 
       "astro:build:done": async () => {
