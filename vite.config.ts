@@ -16,8 +16,7 @@ export default defineConfig({
     outDir: "dist",
     rollupOptions: {
       external: [
-        "astro",
-        "astro/app",
+        /^astro(\/|$)/,
         /^node:/,
         /^virtual:astro:/,
         "esbuild",

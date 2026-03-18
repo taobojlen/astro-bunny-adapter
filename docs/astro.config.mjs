@@ -1,10 +1,19 @@
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import starlight from "@astrojs/starlight";
 import starlightThemeFlexoki from "starlight-theme-flexoki";
 import bunnyAdapter from "astro-bunny-adapter";
 
 export default defineConfig({
   output: "server",
+  env: {
+    schema: {
+      TEST_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        default: "default-secret-value",
+      }),
+    },
+  },
   adapter: bunnyAdapter({
     shiki: { bundledLangs: ["bash", "js", "yaml"] },
   }),

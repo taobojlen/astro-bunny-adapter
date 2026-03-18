@@ -43,6 +43,21 @@ describe("SSR rendering", () => {
     expect(data).toHaveProperty("time");
   });
 
+  it("supports astro:env/server schema secrets and getSecret()", async () => {
+    // Simulate a runtime env var so getSecret() can find it
+    process.env.TEST_SECRET = "test-value";
+    const request = new Request("http://example.com/api/env");
+    const result = await entry.handler({ request });
+
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(200);
+    const data = await (result as Response).json();
+    expect(data).toEqual({
+      schemaSecret: true,
+      dynamicSecret: true,
+    });
+  });
+
   it("passes through requests that don't match any route", async () => {
     const request = new Request("http://example.com/no-such-page");
     const result = await entry.handler({ request });

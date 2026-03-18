@@ -93,6 +93,7 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
             serverOutput: "stable",
             staticOutput: "unsupported",
             sharpImageService: "unsupported",
+            envGetSecret: "stable",
           },
         });
       },
