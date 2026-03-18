@@ -150,11 +150,40 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
           new URL("./server/entry.bundled.mjs", astroConfig.outDir),
         );
 
+        // Bunny edge scripting runs on a Deno-based runtime that has
+        // native fetch. Libraries like @libsql/client depend on cross-fetch,
+        // whose browser ponyfill breaks on Deno. Replace it with native APIs.
+        const nativeFetchPlugin = {
+          name: "native-fetch",
+          setup(build: { onResolve: Function; onLoad: Function }) {
+            build.onResolve(
+              { filter: /^cross-fetch/ },
+              (args: { path: string }) => ({
+                path: args.path,
+                namespace: "native-fetch",
+              }),
+            );
+            build.onLoad(
+              { filter: /.*/, namespace: "native-fetch" },
+              () => ({
+                contents: [
+                  "export default globalThis.fetch;",
+                  "export const fetch = globalThis.fetch;",
+                  "export const Headers = globalThis.Headers;",
+                  "export const Request = globalThis.Request;",
+                  "export const Response = globalThis.Response;",
+                ].join("\n"),
+                loader: "js",
+              }),
+            );
+          },
+        };
+
         const defaults: BuildOptions = {
           ...getDefaultEsbuildOptions(),
           entryPoints: [entryFile],
           outfile: outFile,
-          plugins: [nodeProtocolImports.default],
+          plugins: [nodeProtocolImports.default, nativeFetchPlugin],
         };
 
         const finalOptions =
