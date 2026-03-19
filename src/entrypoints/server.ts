@@ -66,4 +66,4 @@ export async function handler(
 
 net.http
   .servePullZone()
-  .onClientRequest((ctx) => handler(ctx) as Promise<Request> | Promise<Response>);
+  .onOriginRequest((ctx) => handler(ctx) as Promise<Request> | Promise<Response>);
