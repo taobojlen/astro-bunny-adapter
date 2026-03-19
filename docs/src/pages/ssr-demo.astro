@@ -33,9 +33,13 @@ const serverTime = new Date().toISOString();
       const result = document.getElementById("api-result")!;
       result.textContent = "Loading...";
       try {
-        const res = await fetch("/api/time");
+        const res = await fetch("/api/time", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ timezone: "UTC" }),
+        });
         const data = await res.json();
-        result.textContent = data.time;
+        result.textContent = `${data.time} (${data.timezone})`;
       } catch (err) {
         result.textContent = `Error: ${err}`;
       }
