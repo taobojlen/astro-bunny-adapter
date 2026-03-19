@@ -6,12 +6,17 @@ import { setGetEnv } from "astro/env/setup";
 
 // Polyfill process.env from Deno's environment so that server-side code
 // can access runtime env vars in the Bunny edge runtime (Deno-based).
+// Only runs in Deno — in Node.js, process.env is already a reactive proxy
+// and replacing it would break dynamic env var access (e.g. getSecret).
 // @ts-ignore - Deno runtime
-const denoEnv = globalThis.Deno?.env?.toObject?.() ?? {};
-// @ts-ignore
-globalThis.process = globalThis.process ?? {};
-// @ts-ignore
-globalThis.process.env = { ...denoEnv, ...globalThis.process.env };
+if (typeof Deno !== "undefined") {
+  // @ts-ignore
+  const denoEnv = Deno.env?.toObject?.() ?? {};
+  // @ts-ignore
+  globalThis.process = globalThis.process ?? {};
+  // @ts-ignore
+  globalThis.process.env = { ...denoEnv, ...globalThis.process.env };
+}
 
 // Wire up astro:env/server's getSecret() to read from the polyfilled env.
 setGetEnv((key) => process.env[key]);
