@@ -33,12 +33,19 @@ export function getDefaultEsbuildOptions(): Omit<BuildOptions, "entryPoints" | "
     format: "esm",
     platform: "browser",
     target: "es2024",
+    conditions: ["browser", "worker", "import", "default"],
     minify: true,
     external: [
       "node:*",
       "@bunny.net/edgescript-sdk",
       "@bunny.net/edgescript-sdk/*",
     ],
+    define: {
+      "process.env.NODE_ENV": '"production"',
+    },
+    banner: {
+      js: 'import * as process from "node:process";import { Buffer } from "node:buffer";globalThis.process ??= process;globalThis.Buffer ??= Buffer;globalThis.global ??= globalThis;',
+    },
     logLevel: "info",
   };
 }
@@ -150,40 +157,11 @@ export default function bunnyAdapter(options: Options = {}): AstroIntegration {
           new URL("./server/entry.bundled.mjs", astroConfig.outDir),
         );
 
-        // Bunny edge scripting runs on a Deno-based runtime that has
-        // native fetch. Libraries like @libsql/client depend on cross-fetch,
-        // whose browser ponyfill breaks on Deno. Replace it with native APIs.
-        const nativeFetchPlugin = {
-          name: "native-fetch",
-          setup(build: { onResolve: Function; onLoad: Function }) {
-            build.onResolve(
-              { filter: /^cross-fetch/ },
-              (args: { path: string }) => ({
-                path: args.path,
-                namespace: "native-fetch",
-              }),
-            );
-            build.onLoad(
-              { filter: /.*/, namespace: "native-fetch" },
-              () => ({
-                contents: [
-                  "export default globalThis.fetch;",
-                  "export const fetch = globalThis.fetch;",
-                  "export const Headers = globalThis.Headers;",
-                  "export const Request = globalThis.Request;",
-                  "export const Response = globalThis.Response;",
-                ].join("\n"),
-                loader: "js",
-              }),
-            );
-          },
-        };
-
         const defaults: BuildOptions = {
           ...getDefaultEsbuildOptions(),
           entryPoints: [entryFile],
           outfile: outFile,
-          plugins: [nodeProtocolImports.default, nativeFetchPlugin],
+          plugins: [nodeProtocolImports.default],
         };
 
         const finalOptions =
